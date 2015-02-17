@@ -20,15 +20,16 @@ class Chef
         @resource_name = :xml_file
         @action = 'edit'
         @provider = Chef::Provider::XmlFile
-        @partials = {}
+        @partials = Hash.new{|h,k| h[k] = {}}
         @attributes = {}
         @texts = {}
         @path = name
         allowed_actions.push(:edit)
       end
 
-      def partial(xpath, file)
-        @partials[xpath] =  file
+      def partial(xpath, file, position = nil)
+        @partials[xpath][:file] =  file
+        @partials[xpath][:position] = position
       end
 
       def text(xpath, content)
@@ -97,10 +98,10 @@ class Chef
 
       def do_partials(file)
         modified = false
-        new_resource.partials.each do |xpath, partial|
-          partial_path = file_cache_path(partial) 
+        new_resource.partials.each do |xpath, spec|
+          partial_path = file_cache_path(spec[:file])
           unless file.partial_exist?(xpath, partial_path)
-            file.add_partial(xpath, partial_path)
+            file.add_partial(xpath, partial_path, spec[:position])
             modified = true
           end
         end
