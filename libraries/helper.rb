@@ -15,9 +15,17 @@ class XMLFile
     @formatter.compact = true
   end
 
-  def add_partial(xpath, partial_path)
+  def add_partial(xpath, partial_path, position = nil)
     partial = REXML::Document.new(File.new(partial_path))
-    fetch!(xpath).add(partial.root)
+    if position
+      if position[:after]
+        fetch!(xpath).insert_after(position[:after], partial.root)
+      elsif position[:before]
+        fetch!(xpath).insert_before(position[:before], partial.root)
+      end
+    else
+      fetch!(xpath).add(partial.root)
+    end
   end
 
   def add_text(xpath, text)
