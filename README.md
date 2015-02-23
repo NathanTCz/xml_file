@@ -14,7 +14,7 @@ partial content.
 
 - 'partial' attribute to add a XML fragments. Following example will
 insert `part.xml` (present in `files/default` directory of the consumer cookbook) at '/parent/child' XPath target's last element.
-`whole.xml`
+Content of _whole.xml_
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="">
@@ -26,14 +26,14 @@ insert `part.xml` (present in `files/default` directory of the consumer cookbook
 <project>
 ```
 
-`part.xml`
+Content of _part.xml_
 ```xml
 <issuetracker>
   <name>Jira</name>
   <url>http://example.com</url>
 </issuetracker>
 ```
-
+*xml_file* resource declaration:
 ```ruby
 xml_file '/opt/whole.xml' do
   partial '//project', 'part.xml'
@@ -42,7 +42,7 @@ xml_file '/opt/whole.xml' do
   mode 0644
 end
 ```
-will result:
+will change _whole.xml_ file to:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="">
@@ -60,7 +60,7 @@ will result:
 `before` or `after` keys can be specified alongside the XPath values
 to insert the elements at certain position with respective to their siblings.
 
-- The `attribute` method allows setting the value of an XML element's attribute.
+- The 'attribute' method allows setting the value of an XML element's attribute.
 Following is an example:
 ```ruby
 xml_file '/opt/whole.xml' do
@@ -81,7 +81,7 @@ Will result:
   </maintainers>
 <project>
 ```
-Finally, the `text` method will set the text content of an XML element. Following example:
+Finally, the 'text' method will set the text content of an XML element. Following example:
 ```ruby
 xml_file '/opt/whole.xml' do
   text '//maintainer[last()]', 'Ray'
