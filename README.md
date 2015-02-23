@@ -1,51 +1,111 @@
 ## xml_file - Cookbook
 
-`xml_file` cookbook provides chef resource-provider to manage
-XML files.
+`xml_file` resource-provider to manage XML files.
+
+### Description
+
+`xml_file` resource allows managing XML files where only parts of the file's
+content is controlled. Users can specify `XPath` targets and expected content
+at those targets.
 
 ### Usage
+`xml_file` resource allows three different attributes to specify
+partial content.
 
-`xml_file` resource allows managing only parts XML file. Users
-can specify expectd content against `XPath` targets. Following
-are three ways to specify content:
+- 'partial' attribute to add a XML fragments. Following example will
+insert `part.xml` (present in `files/default` directory of the consumer cookbook) at '/parent/child' XPath target's last element.
+`whole.xml`
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="">
+  <repo type="git"></repo>
+  <maintainers>
+    <maintainer>Hendrix</maintainer>
+    <maintainer>Morrison</maintainer>
+  </maintainers>
+<project>
+```
 
-The 'partial' method to add a XML file fragment. Following example will
-insert `part.xml` (present in `files/default` directory of the same cookbook)
-at '/parent/child' XPath target.
+`part.xml`
+```xml
+<issuetracker>
+  <name>Jira</name>
+  <url>http://example.com</url>
+</issuetracker>
+```
+
 ```ruby
 xml_file '/opt/whole.xml' do
-  partial '/parent/child', 'part.xml'
+  partial '//project', 'part.xml'
   owner 'root'
   group 'root'
   mode 0644
 end
 ```
-The `attribute` method will set the value of an XML element's attribute.
-Following example will set `environment` attribute of the element (found
-in XPath `/parent/child`) to 'development'.
+will result:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="">
+  <repo type="git"></repo>
+  <maintainers>
+    <maintainer>Hendrix</maintainer>
+    <maintainer>Morrison</maintainer>
+  </maintainers>
+  <issuetracker>
+    <name>Jira</name>
+    <url>http://example.com</url>
+  </issuetracker>
+<project>
+```
+`before` or `after` keys can be specified alongside the XPath values
+to insert the elements at certain position with respective to their siblings.
 
+- The `attribute` method allows setting the value of an XML element's attribute.
+Following is an example:
 ```ruby
 xml_file '/opt/whole.xml' do
-  attribute '/parent/child', 'environment', 'development'
+  attribute '//project/repo', 'type', 'svn'
   owner 'root'
   group 'root'
   mode 0644
 end
 ```
-The `text` method will set the text content of an XML element. Example:
-
+Will result:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="">
+  <repo type="svn"></repo>
+  <maintainers>
+    <maintainer>Hendrix</maintainer>
+    <maintainer>Morrison</maintainer>
+  </maintainers>
+<project>
+```
+Finally, the `text` method will set the text content of an XML element. Following example:
 ```ruby
 xml_file '/opt/whole.xml' do
-  text '/parent/child', 'test-content'
+  text '//maintainer[last()]', 'Ray'
   owner 'root'
   group 'root'
   mode 0644
 end
 ```
+will result:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="">
+  <repo type="svn"></repo>
+  <maintainers>
+    <maintainer>Hendrix</maintainer>
+    <maintainer>Ray</maintainer>
+  </maintainers>
+<project>
+```
 
-All three methods can be combined.
+All three methods can be combined. When used in combination, partials are
+processed before `text` and `attribute`, hence they can refer to XPath introduced by partials.
 
-`xml_file` resource only supprts :edit action currently. Its written in
+`xml_file` resource only supprts :edit action. Its written in
 REXML and should be portable across platforms.
 
 ## License
@@ -53,7 +113,7 @@ REXML and should be portable across platforms.
 
 ## Contributing
 
-1. Fork it ( https://github.com/goatos/xml_file/fork )
+1. Fork it ( https://github.com/GoatOS/xml_file/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
