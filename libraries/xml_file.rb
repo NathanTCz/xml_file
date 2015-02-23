@@ -3,10 +3,16 @@ require 'chef/mixin/enforce_ownership_and_permissions'
 require 'chef/scan_access_control'
 require_relative 'helper'
 
+if defined?(ChefSpec)
+  def edit_xml_file(resource_name)
+    ChefSpec::Matchers::ResourceMatcher.new('xml_file', :edit, resource_name)
+  end
+end
+
 class Chef
   class Resource
+    # Chef resoutrce for editing XML file
     class XmlFile < Chef::Resource
-
       include Chef::Mixin::Securable
 
       attr_reader :partials
@@ -47,8 +53,8 @@ class Chef
   end
 
   class Provider
+    # Chef provider for XmlFile resource
     class XmlFile < Chef::Provider
-
       include Chef::Mixin::EnforceOwnershipAndPermissions
 
       provides :xml_file

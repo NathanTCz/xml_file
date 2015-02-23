@@ -1,5 +1,6 @@
-require 'spec_helper'
 require 'fileutils'
+require 'chef'
+require_relative '../libraries/xml_file'
 
 describe 'XmlFile HWRP' do
   let(:formatter) do
@@ -55,8 +56,8 @@ describe 'XmlFile HWRP' do
       events = Chef::EventDispatch::Dispatcher.new
       rc = Chef::RunContext.new(Chef::Node.new, nil, events)
       resource = Chef::Resource::XmlFile.new('spec/data/hwrp.xml', rc)
-      resource.owner('ranjib')
-      resource.group('ranjib')
+      resource.owner(ENV['USER'])
+      resource.group(ENV['USER'])
       resource.mode('777')
       resource.attribute('//tasks', 'bar', 'baz')
       resource.run_action(:edit)
