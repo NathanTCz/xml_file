@@ -30,7 +30,7 @@ class Chef
         @action = 'edit'
         @provider = Chef::Provider::XmlFile
         @partials = Hash.new{|h,k| h[k] = {}}
-        @attributes = {}
+        @attributes = Hash.new{|h,k| h[k] = []}
         @texts = {}
         @path = name
         @decorator_block = lambda{|doc| }
@@ -49,7 +49,7 @@ class Chef
       end
 
       def attribute(xpath, name, value)
-        @attributes[xpath] = { name: name, value: value }
+        @attributes[xpath] << { name: name, value: value }
       end
 
       def decorate(&block)
@@ -129,10 +129,12 @@ class Chef
 
       def do_attributes(file)
         modified = false
-        new_resource.attributes.each do |xpath, spec|
-          unless file.same_attribute?(xpath, spec[:name], spec[:value])
-            file.set_attribute(xpath, spec[:name], spec[:value])
-            modified = true
+        new_resource.attributes.each do |xpath, specs|
+          specs.each do |spec|
+            unless file.same_attribute?(xpath, spec[:name], spec[:value])
+              file.set_attribute(xpath, spec[:name], spec[:value])
+              modified = true
+            end
           end
         end
         modified
