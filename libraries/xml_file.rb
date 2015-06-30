@@ -2,6 +2,8 @@ require 'chef/mixin/securable'
 require 'chef/mixin/enforce_ownership_and_permissions'
 require 'chef/scan_access_control'
 require_relative 'helper'
+require 'chef/run_context'
+require 'chef/event_dispatch/dispatcher'
 
 if defined?(ChefSpec)
   def edit_xml_file(resource_name)
@@ -18,6 +20,7 @@ class Chef
       attr_reader :partials
       attr_reader :attributes
       attr_reader :texts
+      attr_reader :decorator_block
       identity_attr :path
       state_attrs :owner, :group, :mode
 
@@ -30,12 +33,15 @@ class Chef
         @attributes = {}
         @texts = {}
         @path = name
+        @decorator_block = lambda{|doc| }
         allowed_actions.push(:edit)
       end
 
       def partial(xpath, file, position = nil)
         @partials[xpath][:file] =  file
-        @partials[xpath][:position] = position
+        if position
+          @partials[xpath][:position] = position
+        end
       end
 
       def text(xpath, content)
@@ -44,6 +50,10 @@ class Chef
 
       def attribute(xpath, name, value)
         @attributes[xpath] = { name: name, value: value }
+      end
+
+      def decorate(&block)
+        @decorator_block = block if block
       end
 
       def path(arg=nil)
@@ -90,6 +100,9 @@ class Chef
 
       def action_edit
         file = XMLFile.new(new_resource.path)
+        if new_resource.decorator_block
+          new_resource.decorator_block.call(file.doc)
+        end
         updated_partials = do_partials(file)
         updated_texts = do_texts(file)
         updated_attributes = do_attributes(file)
