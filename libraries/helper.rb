@@ -1,5 +1,6 @@
 require 'rexml/document'
 
+# Class XMLFile
 class XMLFile
   class NonExistentElementError < StandardError; end
 
@@ -48,14 +49,23 @@ class XMLFile
     fetch!(xpath) && fetch!(xpath).attributes.key?(attr)
   end
 
+  def remove?(xpath)
+    fetch!(xpath, false)
+  end
+
+  def remove(xpath)
+    fetch!(xpath).remove
+  end
+
   def fetch(xpath)
     doc.elements[xpath]
   end
 
-  def fetch!(xpath)
+  def fetch!(xpath, fail = true)
     el = fetch(xpath)
     if el.nil?
-      raise NonExistentElementError, "XPath: #{xpath} does not exist" if el.nil?
+      return false unless fail
+      fail NonExistentElementError, "XPath: #{xpath} does not exist" if el.nil?
     else
       el
     end
@@ -74,7 +84,7 @@ class XMLFile
     doc.elements[xpath].children.any? do |el|
       buf2 = StringIO.new
       formatter.write(el, buf2)
-      buf2.string == buf1.string
+      return true if buf2.string == buf1.string
     end
   end
 end

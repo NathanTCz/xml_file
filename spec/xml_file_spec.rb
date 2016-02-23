@@ -15,7 +15,7 @@ describe Chef::Resource::XmlFile do
       expect(resource.texts['/foo/baz']).to eq('test-content')
     end
     it '#attribute' do
-      hash = {name: 'test-attr', value: 'test-value'}
+      hash = { name: 'test-attr', value: 'test-value' }
       resource.attribute('/bar/baz', hash[:name], hash[:value])
       expect(resource.attributes['/bar/baz']).to eq([hash])
     end
