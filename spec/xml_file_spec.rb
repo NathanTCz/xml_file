@@ -19,6 +19,10 @@ describe Chef::Resource::XmlFile do
       resource.attribute('/bar/baz', hash[:name], hash[:value])
       expect(resource.attributes['/bar/baz']).to eq([hash])
     end
+    it '#remove' do
+      resource.remove('//baz')
+      expect(resource.removes['//baz']).to eq('//baz')
+    end
     it '#decorate' do
       resource.decorate do |doc|
       end

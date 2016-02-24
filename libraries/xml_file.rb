@@ -109,7 +109,7 @@ class Chef
         updated_texts = do_texts(file)
         updated_attributes = do_attributes(file)
         updated_removes = do_removes(file)
-        if updated_partials || updated_texts || updated_attributes
+        if updated_partials || updated_texts || updated_attributes || updated_removes
           converge_by "updated xml_file '#{@new_resource.name}" do
             file.write(new_resource.path)
           end
@@ -157,7 +157,7 @@ class Chef
       def do_removes(file)
         modified = false
         new_resource.removes.each do |xpath, _|
-          while file.remove?(xpath)
+          if file.remove?(xpath)
             file.remove(xpath)
             modified = true
           end

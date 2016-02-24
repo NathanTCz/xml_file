@@ -54,7 +54,9 @@ class XMLFile
   end
 
   def remove(xpath)
-    fetch!(xpath).remove
+    while (element = fetch!(xpath, false))
+      element.remove
+    end
   end
 
   def fetch(xpath)

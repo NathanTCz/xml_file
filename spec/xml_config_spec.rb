@@ -49,6 +49,16 @@ describe 'XmlFile HWRP' do
       expect(out.same_text?('/pipeline/environmentvariables', 'test-content')).to be(true)
     end
   end
+  context '#remove elements' do
+    it 'should remove elements' do
+      file = XMLFile.new('spec/data/input.xml')
+      file.remove('//arg')
+      file.write('spec/data/output2.xml')
+      expect(file.remove?('//arg')).to be(false)
+      out = XMLFile.new('spec/data/output2.xml')
+      expect(out.remove?('//arg')).to be(false)
+    end
+  end
   context '#hwrp' do
     it 'should stay idempotent' do
       File.unlink('spec/data/hwrp.xml') if File.exist?('spec/data/hwrp.xml')

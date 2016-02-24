@@ -9,7 +9,7 @@ content is controlled. Users can specify `XPath` targets and expected content
 at those targets.
 
 ### Usage
-`xml_file` resource allows three different attributes to specify
+`xml_file` resource allows different attributes to specify
 partial content.
 
 - 'partial' attribute to add a XML fragments. Following example will
@@ -81,7 +81,7 @@ Will result:
   </maintainers>
 <project>
 ```
-Finally, the 'text' method will set the text content of an XML element. Following example:
+- The 'text' method will set the text content of an XML element. Following example:
 ```ruby
 xml_file '/opt/whole.xml' do
   text '//maintainer[last()]', 'Ray'
@@ -101,11 +101,26 @@ will result:
   </maintainers>
 <project>
 ```
+- The 'remove' method will remove all matching xpath elements: Following example:
+```ruby
+xml_file '/opt/whole.xml' do
+  remove '//maintainer'
+end
+```
+will result:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="">
+  <repo type="svn"></repo>
+  <maintainers>
+  </maintainers>
+<project>
+```
 
-All three methods can be combined. When used in combination, partials are
+All methods can be combined. When used in combination, partials are
 processed before `text` and `attribute`, hence they can refer to XPath introduced by partials.
 
-`xml_file` resource only supprts :edit action. Its written in
+`xml_file` resource only supports :edit action. Its written in
 REXML and should be portable across platforms.
 
 ## License
