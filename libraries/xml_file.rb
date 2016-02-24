@@ -121,11 +121,7 @@ class Chef
       def do_partials(file)
         modified = false
         new_resource.partials.each do |xpath, spec|
-          partial_path = if spec[:file][0] == '/'
-                           spec[:file]
-                         else
-                           file_cache_path(spec[:file])
-                         end
+          partial_path = file_cache_path(spec[:file])
           unless file.partial_exist?(xpath, partial_path)
             file.add_partial(xpath, partial_path, spec[:position])
             modified = true
@@ -178,7 +174,11 @@ class Chef
       end
 
       def file_cache_path(name)
-        cookbook.preferred_filename_on_disk_location(run_context.node, :files, name)
+        if name[0] == '/'
+          name
+        else
+          cookbook.preferred_filename_on_disk_location(run_context.node, :files, name)
+        end
       end
 
       def cookbook
