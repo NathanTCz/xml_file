@@ -86,12 +86,7 @@ class XMLFile
     doc.elements[xpath].children.any? do |el|
       buf2 = StringIO.new
       formatter.write(el, buf2)
-      puts "buf1"
-      puts buf1.string
-    puts "buf2"
-    puts buf2.string
       return true if buf2.string == buf1.string
-      puts "compare false"
     end
   end
 end
