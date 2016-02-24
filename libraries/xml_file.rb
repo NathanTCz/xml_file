@@ -13,13 +13,14 @@ end
 
 class Chef
   class Resource
-    # Chef resoutrce for editing XML file
+    # Chef resource for editing XML file
     class XmlFile < Chef::Resource
       include Chef::Mixin::Securable
 
       attr_reader :partials
       attr_reader :attributes
       attr_reader :texts
+      attr_reader :removes
       attr_reader :decorator_block
       identity_attr :path
       state_attrs :owner, :group, :mode
@@ -29,19 +30,18 @@ class Chef
         @resource_name = :xml_file
         @action = 'edit'
         @provider = Chef::Provider::XmlFile
-        @partials = Hash.new{|h,k| h[k] = {}}
-        @attributes = Hash.new{|h,k| h[k] = []}
+        @partials = Hash.new { |h, k| h[k] = {} }
+        @attributes = Hash.new { |h, k| h[k] = [] }
         @texts = {}
+        @removes = {}
         @path = name
-        @decorator_block = lambda{|doc| }
+        @decorator_block = ->(doc) {}
         allowed_actions.push(:edit)
       end
 
       def partial(xpath, file, position = nil)
-        @partials[xpath][:file] =  file
-        if position
-          @partials[xpath][:position] = position
-        end
+        @partials[xpath][:file] = file
+        @partials[xpath][:position] = position if position
       end
 
       def text(xpath, content)
@@ -56,8 +56,12 @@ class Chef
         @decorator_block = block if block
       end
 
-      def path(arg=nil)
-        set_or_return(:path, arg, :kind_of => String)
+      def remove(xpath)
+        @removes[xpath] = xpath
+      end
+
+      def path(arg = nil)
+        set_or_return(:path, arg, kind_of: String)
       end
     end
   end
@@ -83,9 +87,7 @@ class Chef
       end
 
       def load_resource_attributes_from_file(resource)
-        if Chef::Platform.windows?
-          return
-        end
+        return if Chef::Platform.windows?
         acl_scanner = ScanAccessControl.new(@new_resource, resource)
         acl_scanner.set_all!
       end
@@ -106,7 +108,8 @@ class Chef
         updated_partials = do_partials(file)
         updated_texts = do_texts(file)
         updated_attributes = do_attributes(file)
-        if updated_partials || updated_texts || updated_attributes
+        updated_removes = do_removes(file)
+        if updated_partials || updated_texts || updated_attributes || updated_removes
           converge_by "updated xml_file '#{@new_resource.name}" do
             file.write(new_resource.path)
           end
@@ -151,6 +154,17 @@ class Chef
         modified
       end
 
+      def do_removes(file)
+        modified = false
+        new_resource.removes.each do |xpath, _|
+          if file.remove?(xpath)
+            file.remove(xpath)
+            modified = true
+          end
+        end
+        modified
+      end
+
       def do_acl_changes
         if access_controls.requires_changes?
           converge_by(access_controls.describe_changes) do
@@ -160,8 +174,13 @@ class Chef
       end
 
       def file_cache_path(name)
-        cookbook.preferred_filename_on_disk_location(run_context.node, :files, name)
+        if name[0] == '/'
+          name
+        else
+          cookbook.preferred_filename_on_disk_location(run_context.node, :files, name)
+        end
       end
+
       def cookbook
         @cookbook ||= run_context.cookbook_collection[new_resource.cookbook_name]
       end
