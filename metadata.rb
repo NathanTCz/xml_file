@@ -1,5 +1,5 @@
 name 'xml_file'
-version '0.1'
+version '0.2'
 maintainer 'Ranjib Dey'
 maintainer_email 'ranjib@linux.com'
 license 'Apache 2.0'
