@@ -7,11 +7,11 @@ class XMLFile
   attr_reader :doc, :formatter
 
   def initialize(path = nil)
-    if File.exist?(path)
-      @doc = REXML::Document.new(File.new(path))
-    else
-      @doc = REXML::Document.new('')
-    end
+    @doc = if File.exist?(path)
+             REXML::Document.new(File.new(path))
+           else
+             REXML::Document.new('')
+           end
     @formatter = REXML::Formatters::Pretty.new
     @formatter.compact = true
   end
@@ -67,7 +67,7 @@ class XMLFile
     el = fetch(xpath)
     if el.nil?
       return false unless fail
-      fail NonExistentElementError, "XPath: #{xpath} does not exist" if el.nil?
+      raise NonExistentElementError, "XPath: #{xpath} does not exist" if el.nil?
     else
       el
     end
