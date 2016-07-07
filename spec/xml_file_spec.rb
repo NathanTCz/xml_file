@@ -7,8 +7,15 @@ describe Chef::Resource::XmlFile do
     end
     it '#partial' do
       resource.partial('//foo/bar', 'test.xml', 10)
-      hash = { file: 'test.xml', position: 10 }
-      expect(resource.partials['//foo/bar']).to eq(hash)
+      resource.partial('//foo/bar', 'test_second_partial.xml', 10)
+      array = []
+      array.push(['//foo/bar', 'test.xml', 10])
+      array.push(['//foo/bar', 'test_second_partial.xml', 10])
+      expect(resource.partials).to match_array(
+        [
+          ['//foo/bar', 'test.xml', 10],
+          ['//foo/bar', 'test_second_partial.xml', 10]
+        ])
     end
     it '#text' do
       resource.text('/foo/baz', 'test-content')

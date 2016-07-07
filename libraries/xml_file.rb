@@ -30,7 +30,7 @@ class Chef
         @resource_name = :xml_file
         @action = 'edit'
         @provider = Chef::Provider::XmlFile
-        @partials = Hash.new { |h, k| h[k] = {} }
+        @partials = []
         @attributes = Hash.new { |h, k| h[k] = [] }
         @texts = {}
         @removes = {}
@@ -40,8 +40,7 @@ class Chef
       end
 
       def partial(xpath, file, position = nil)
-        @partials[xpath][:file] = file
-        @partials[xpath][:position] = position if position
+        @partials.push([xpath, file, position])
       end
 
       def text(xpath, content)
@@ -120,10 +119,10 @@ class Chef
 
       def do_partials(file)
         modified = false
-        new_resource.partials.each do |xpath, spec|
-          partial_path = file_cache_path(spec[:file])
+        new_resource.partials.each do |xpath, spec, position|
+          partial_path = file_cache_path(spec)
           unless file.partial_exist?(xpath, partial_path)
-            file.add_partial(xpath, partial_path, spec[:position])
+            file.add_partial(xpath, partial_path, position)
             modified = true
           end
         end

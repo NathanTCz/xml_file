@@ -17,5 +17,6 @@ end
 
 xml_file '/opt/template.xml' do
   partial '//pipelines', template_file, before: '//pipeline'
+  partial '//pipelines', 'second_partial.xml', before: '//pipeline'
   remove '//stage'
 end
