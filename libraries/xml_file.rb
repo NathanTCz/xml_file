@@ -173,7 +173,7 @@ class Chef
       end
 
       def file_cache_path(name)
-        if name[0] == '/'
+        if name[0] == '/' || name[1] == ':'
           name
         else
           cookbook.preferred_filename_on_disk_location(run_context.node, :files, name)
